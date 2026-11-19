@@ -101,7 +101,7 @@ impl RawAllData{
         use std::io::{Error, ErrorKind};
 
         //ここで読む行を定義している。
-        const COLUMNS: [&str; 4] = ["temp", "field", "Vxx_1f_x", "VH_1f_x"];
+        const COLUMNS: [&str; 5] = ["temp", "field", "Vxx_1f_x", "VH_1f_x","curr_amp"];
         let mut lines = BufReader::new(File::open(&file_name)?).lines().enumerate();
 
         // temps や currs など、測定表の前にある装置設定を読み飛ばす。
@@ -112,8 +112,8 @@ impl RawAllData{
             let line = line?;
             let headers: Vec<_> = line.trim_start_matches('\u{feff}').split(',').map(str::trim).collect();
             let positions = COLUMNS.map(|name| headers.iter().position(|&header| header == name));
-            if let [Some(temp), Some(field), Some(xx), Some(hall)] = positions {
-                break [temp, field, xx, hall];
+            if let [Some(temp), Some(field), Some(xx), Some(hall), Some(curr)] = positions {
+                break [temp, field, xx, hall, curr];
             }
         };
 
@@ -132,12 +132,13 @@ impl RawAllData{
                     .ok_or_else(|| Error::new(ErrorKind::InvalidData,
                         format!("{} 行目: 列 {} に有効な数値がありません", line_index + 1, name)))
             };
-            let [temp, field, xx, hall] = indices;
+            let [temp, field, xx, hall, curr] = indices;
             measurements.push(OneMeasurement {
                 temp: read_number(temp, "temp")?,
                 field: read_number(field, "field")? * 1000.0, // kG → 既存処理の磁場目盛（1 T = 10000）
-                rho_ch1: Some(read_number(xx, "Vxx_1f_x")?),
-                rho_ch2: Some(read_number(hall, "VH_1f_x")?),
+                rho_ch1: Some(read_number(xx, "Vxx_1f_x")? / read_number(curr, "curr_amp")? * 1000.0), // V / A → Ω, curr_amp は mA 単位なので 1000 を掛ける
+                rho_ch2: Some(read_number(hall, "VH_1f_x")? / read_number(curr, "curr_amp")? * 1000.0), // V / A → Ω, curr_amp は mA 単位なので 1000 を掛ける
+
             });
         }
 
