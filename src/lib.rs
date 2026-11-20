@@ -44,7 +44,7 @@ pub fn cal_and_write(temp : Vec<Temperature>, shape : setting::Shape, comment : 
 
 			// Write to CSV and report the output filename
 			match all_fin.write_to_csv(None) {
-				Ok(path) => println!("Wrote output CSV: {}", path),
+				Ok(path) => println!("^ . x . ^ Wrote output CSV: {}", path),
 				Err(e) => eprintln!("Failed to write AllFinData CSV: {}", e),
 			}
 		}

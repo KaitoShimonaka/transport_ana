@@ -242,6 +242,8 @@ impl RawAllData{
 //PPMSのデータでは一列にChannnel 1 と Channel 2 のどちらかが入っているという形式が取られているが、処理しにくいので
 //チャンネルごとに分割してしまって処理に回す。そのために、一時的にOneMeasurement構造体で両方のチャンネルのデータを持ち、
 //その後RawDataSetにおいて分割したデータを保持する
+//Yokozibaのデータでは、Ch1とCh2の両方のデータが同じ行に入っているので、OneMeasurement構造体を使って両方のチャンネルのデータを一時的に保持し、
+//その後RawDataSetにおいて分割したデータを保持する
 #[derive(Debug, Clone)]
 pub struct RawDataSet{
     pub measurements : Vec<Measurement>,
